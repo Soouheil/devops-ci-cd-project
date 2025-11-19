@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Télécharger le code du repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Installer Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 3. Login Docker Hub (avec secrets)
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 4. Build + Push vers Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/devops-ci-cd-project:latest
+
+      # 5. Optionnel : tester l’image
+      - name: Run tests
+        run: |
+          echo "Running tests (fake test)..."
+          echo "Test OK!"
+
